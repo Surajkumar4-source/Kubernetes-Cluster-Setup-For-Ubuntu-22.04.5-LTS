@@ -1,6 +1,6 @@
 
 
-# Kubernetes_Cluster_Setup_RockyLinux(CentOS,RHEL)
+# Kubernetes_Cluster_Setup_Ubuntu
 
 
 
@@ -10,7 +10,7 @@
 
 ---
 
-## Kubernetes Quickstart Cluster Implementation for Rocky Linux
+## Kubernetes Quickstart Cluster Implementation for Ubuntu 
 
 ### Introduction
 Kubernetes is a powerful open-source system for automating the deployment, scaling, and management of containerized applications. It provides a platform for managing distributed systems, ensuring high availability, scalability, and reliability. This repository provides a step-by-step guide for setting up a **Kubernetes cluster on Rocky Linux**, making it easier for developers and system administrators to deploy and manage their Kubernetes environment.
@@ -93,7 +93,7 @@ Below is the organized step-by-step Implementation guide for setting up Kubernet
 # **Common Installation Steps (For Both Master and Worker Nodes)**
 
 1. **Enable Kernel Modules for Kubernetes**
-   ```bash
+   ```yml
    sudo tee /etc/modules-load.d/containerd.conf <<EOF
    overlay
    br_netfilter
@@ -104,7 +104,7 @@ Below is the organized step-by-step Implementation guide for setting up Kubernet
    ```
 
 2. **Configure Kernel Parameters**
-   ```bash
+   ```yml
    cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
    net.bridge.bridge-nf-call-iptables  = 1
    net.ipv4.ip_forward = 1
@@ -115,41 +115,41 @@ Below is the organized step-by-step Implementation guide for setting up Kubernet
    ```
 
 3. **Disable Swap**
-   ```bash
+   ```yml
    sudo swapoff -a
    sudo sed -i '/swap/d' /etc/fstab
    ```
 
-4. **Install Containerd Runtime **
-   ```bash
-   sudo apt install -y containerd
-
+4. **Install and Configure Containerd Runtime **
+   ```yml
+   apt install -y containerd
    mkdir -p /etc/containerd
-   containerd config default | tee /etc/containerd/config.toml >/dev/null
-   sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+   containerd config default | sudo tee /etc/containerd/config.toml
+   >/dev/null
+   sed -i 's/SystemdCgroup = false/SystemdCgroup = true/'
+   /etc/containerd/config.toml
 
-   sudo systemctl restart containerd
-   sudo systemctl enable containerd
+   systemctl restart containerd
+   systemctl enable containerd
+
    
    ```
 
-5. **Add Kubernetes Repository**
-   ```bash
-   cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
-   [kubernetes]
-   name=Kubernetes
-   baseurl=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/
-   enabled=1
-   gpgcheck=1
-   gpgkey=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/repodata/repomd.xml.key
-   exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
-   EOF
-   ```
+5. **Add Kubernetes Components**
+   ```yml
+   apt install -y curl gnupg2 apt-transport-https ca-certificates software-    properties-common
 
-6. **Install Kubernetes Components**
-   ```yaml
-   sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
-   sudo systemctl enable --now kubelet
+   mkdir -p /etc/apt/keyrings
+   curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key |        sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+   echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg]
+   https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" | sudo tee
+   /etc/apt/sources.list.d/kubernetes.list
+
+   apt update
+   apt install -y kubelet kubeadm kubectl
+   apt-mark hold kubelet kubeadm kubectl
+
    ```
 
 ---
@@ -159,17 +159,30 @@ Below is the organized step-by-step Implementation guide for setting up Kubernet
 
 # **Master Node Setup**
 
-1. **Configure Firewall Rules**
+
+
+1. **UFW Port Allowing**
+     - If UFW is enabled, allow necessary ports:
    ```yaml
-   sudo firewall-cmd --permanent --add-port={6443,2379,2380,10250,10251,10252,10257,10259,179}/tcp
-   sudo firewall-cmd --permanent --add-port=4789/udp
-   sudo firewall-cmd --reload
+   ufw allow 6443/tcp        # API server
+   ufw allow 2379:2380/tcp   # etcd
+   ufw allow 10250/tcp       # Kubelet API
+   ufw allow 10251/tcp       # kube-scheduler
+   ufw allow 10252/tcp       # kube-controller-manager
+   ufw allow 10257/tcp       # etcd metrics
+   ufw allow 10259/tcp
+   ufw allow 179/tcp         # Calico/Flannel BGP
+   ufw allow 4789/udp        # VXLAN for Flannel
+   ufw reload
+
    ```
 
+
 2. **Initialize Kubernetes Cluster**
-   ```yaml
-   sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=<Master_Node_IP>
-   ```
+
+```yml
+kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=<Master_Node_IP>
+```
 
 3. **Save the Join Command**
    - Copy the token displayed at the end of the `kubeadm init` command.
@@ -179,17 +192,31 @@ Below is the organized step-by-step Implementation guide for setting up Kubernet
    mkdir -p $HOME/.kube
    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+   #OR (for root)
+
+   echo 'export KUBECONFIG=/etc/kubernetes/admin.conf' >> ~/.bashrc
+   source ~/.bashrc
+
    ```
 
-5. **Install Network Add-on (Flannel)**
+5. **Install Pod Network Add-on (Flannel)**
    ```yaml
-   kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+    kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+
    ```
 
 6. **Retrieve Join Token (if not saved earlier)**
    ```yaml
    kubeadm token create --print-join-command
    ```
+
+7. **Verify Cluster Status**
+
+```yml
+   kubectl get nodes
+   kubectl get pods -A
+```
 
 ---
 
