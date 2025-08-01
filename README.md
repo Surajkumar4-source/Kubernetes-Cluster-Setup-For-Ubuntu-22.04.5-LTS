@@ -1,6 +1,6 @@
 
 
-# Kubernetes_Cluster_Setup_Ubuntu_22.04.5 LTS (Jammy Jellyfish)
+# Kubernetes Cluster Setup For Ubuntu 22.04.5 LTS (Jammy Jellyfish)
 
 
 
