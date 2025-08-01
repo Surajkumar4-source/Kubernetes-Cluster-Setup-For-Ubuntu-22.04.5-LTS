@@ -332,14 +332,84 @@ This structured implementation separates the steps clearly for the master and wo
 
 
 
+<br>
+<br>
 
 
 
 
+## Steps to Use Master as Worker Node (for Pod Scheduling)
 
+---
 
+### **1. Check Current Node Status**
 
+```bash
+kubectl get nodes
+```
 
+Output (example):
+
+```
+NAME             STATUS   ROLES           AGE     VERSION
+master-node      Ready    control-plane   5m      v1.29.15
+```
+
+---
+
+### **2. Understand Why Pods Don't Schedule on Master**
+
+   - The master has a **taint** like:
+
+```
+node-role.kubernetes.io/control-plane:NoSchedule
+```
+
+   - It tells Kubernetes not to schedule any regular Pods on it.
+
+---
+
+### **3. Remove the Taint**
+
+   - Run this command to allow pod scheduling:
+
+```bash
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+```
+
+   - This removes the taint `node-role.kubernetes.io/control-plane:NoSchedule` from **all nodes** (including the master).
+
+---
+
+### ✅ **4. Confirm Taint Removal**
+
+Check again:
+
+```bash
+kubectl describe node master-node | grep Taint
+```
+
+If it shows **`No taints`**, you're good to go.
+
+---
+
+###  **5. Test by Deploying a Pod**
+
+Try deploying a test Pod:
+
+```bash
+kubectl run nginx-test --image=nginx --port=80
+```
+
+Then check:
+
+```bash
+kubectl get pods -o wide
+```
+
+It should show the pod running on the master node.
+
+---
 
 
 <br>
