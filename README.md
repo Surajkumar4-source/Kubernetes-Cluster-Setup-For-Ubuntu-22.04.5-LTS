@@ -661,6 +661,123 @@ You should see: **"Hello from ConfigMap!"**
 
 
 
+
+
+<br>
+<br>
+<br>
+
+
+
+## **Step-by-Step: Deploy & Expose Nginx using YAML Files**
+
+---
+
+###  **Step 1: Create Deployment YAML**
+
+   -  **File: `nginx-deployment.yaml`**
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+```
+
+   **Explanation:**
+
+   - * `Deployment` ensures 2 replicas of the `nginx` container.
+   - * It labels pods with `app=nginx` for easy selection.
+
+---
+
+###  **Step 2: Create Service YAML to Expose the App**
+
+   **File: `nginx-service.yaml`**
+
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  type: NodePort
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30080
+```
+
+  **Explanation:**
+
+   - * `type: NodePort` exposes the app on `NodeIP:30080`.
+   - * `selector: app=nginx` targets the pods created by the deployment.
+
+
+###  **Step 3: Apply the YAML files**
+
+```yml
+kubectl apply -f nginx-deployment.yaml
+kubectl apply -f nginx-service.yaml
+```
+
+
+
+###  **Step 4: Verify Everything is Running**
+
+```bash
+kubectl get pods
+kubectl get deployments
+kubectl get svc
+```
+
+Example service output:
+
+```
+NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+nginx-service   NodePort   10.96.58.2      <none>        80:30080/TCP   10s
+```
+
+---
+
+###  **Step 5: Access the App in Browser**
+
+Open in your browser:
+
+```
+http://<NodeIP>:30080
+```
+
+
+###  **Bonus: Clean Up (Optional)**
+
+```bash
+kubectl delete -f nginx-deployment.yaml
+kubectl delete -f nginx-service.yaml
+```
+
+
+
+
+
 <br>
 <br>
 <br>
