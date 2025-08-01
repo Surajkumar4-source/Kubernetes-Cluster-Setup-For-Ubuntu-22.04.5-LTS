@@ -381,7 +381,7 @@ kubectl taint nodes --all node-role.kubernetes.io/control-plane-
 
 ---
 
-### ✅ **4. Confirm Taint Removal**
+###  **4. Confirm Taint Removal**
 
 Check again:
 
@@ -450,7 +450,7 @@ kubectl taint nodes master-node node-role.kubernetes.io/control-plane=:NoSchedul
 
 ---
 
-### \ Step 3: Verify the Taint is Reapplied
+###  Step 3: Verify the Taint is Reapplied
 
 ```bash
 kubectl describe node master-node | grep Taint
@@ -528,19 +528,19 @@ If you only run `kubectl run` without exposing the pod, **you won’t be able to
 
 By default, NGINX serves a generic HTML page. To customize it:
 
-### ✅ Step 1: Access the Pod Shell
+###  Step 1: Access the Pod Shell
 
 ```bash
 kubectl exec -it nginx-test -- /bin/bash
 ```
 
-### ✅ Step 2: Navigate to Web Root
+###  Step 2: Navigate to Web Root
 
 ```bash
 cd /usr/share/nginx/html
 ```
 
-### ✅ Step 3: Edit the HTML File
+###  Step 3: Edit the HTML File
 
 Install nano (if needed):
 
@@ -554,11 +554,11 @@ Edit the file:
 nano index.html
 ```
 
-📝 Add your message (e.g., "Welcome to my Kubernetes site!") and save (`Ctrl + O`, `Enter`, `Ctrl + X`).
+ Add your message (e.g., "Welcome to my Kubernetes site!") and save (`Ctrl + O`, `Enter`, `Ctrl + X`).
 
 ---
 
-### ✅ Step 4: Verify the Page in the Browser
+###  Step 4: Verify the Page in the Browser
 
 Via NodePort:
 
@@ -669,34 +669,4 @@ You should see: **"Hello from ConfigMap!"**
 
 
 **👨‍💻 𝓒𝓻𝓪𝓯𝓽𝓮𝓭 𝓫𝔂**: [Suraj Kumar Choudhary](https://github.com/Surajkumar4-source) | 📩 **𝓕𝓮𝓮𝓵 𝓯𝓻𝓮𝓮 𝓽𝓸 𝓓𝓜 𝓯𝓸𝓻 𝓪𝓷𝔂 𝓱𝓮𝓵𝓹**: [csuraj982@gmail.com](mailto:csuraj982@gmail.com)
-
-
-
-
-
-<br>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
