@@ -421,7 +421,7 @@ It should show the pod running on the master node.
 
 ## **Re-Taint the Master Node (Disallow Pod Scheduling Again)**
 
-### ✅ Step 1: Identify the Master Node Name
+###  Step 1: Identify the Master Node Name
 
 ```bash
 kubectl get nodes
@@ -438,7 +438,7 @@ master-node      Ready    control-plane   20m     v1.29.15
 
 ---
 
-### 🧱 Step 2: Reapply the Control Plane Taint
+###  Step 2: Reapply the Control Plane Taint
 
    - Use this command to **re-taint** the master:
 
@@ -450,7 +450,7 @@ kubectl taint nodes master-node node-role.kubernetes.io/control-plane=:NoSchedul
 
 ---
 
-### 🧪 Step 3: Verify the Taint is Reapplied
+### \ Step 3: Verify the Taint is Reapplied
 
 ```bash
 kubectl describe node master-node | grep Taint
