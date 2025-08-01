@@ -124,10 +124,8 @@ Below is the organized step-by-step Implementation guide for setting up Kubernet
    ```yml
    apt install -y containerd
    mkdir -p /etc/containerd
-   containerd config default | sudo tee /etc/containerd/config.toml
-   >/dev/null
-   sed -i 's/SystemdCgroup = false/SystemdCgroup = true/'
-   /etc/containerd/config.toml
+   containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
+   sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
 
    systemctl restart containerd
    systemctl enable containerd
@@ -137,14 +135,12 @@ Below is the organized step-by-step Implementation guide for setting up Kubernet
 
 5. **Add Kubernetes Components**
    ```yml
-   apt install -y curl gnupg2 apt-transport-https ca-certificates software-    properties-common
+   apt install -y curl gnupg2 apt-transport-https ca-certificates software-properties-common
 
    mkdir -p /etc/apt/keyrings
-   curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key |        sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+   curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
-   echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg]
-   https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" | sudo tee
-   /etc/apt/sources.list.d/kubernetes.list
+   echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
    apt update
    apt install -y kubelet kubeadm kubectl
@@ -226,9 +222,17 @@ kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=<Mas
 
 1. **Configure Firewall Rules**
    ```yaml
-   sudo firewall-cmd --permanent --add-port={179,10250,30000-32767}/tcp
-   sudo firewall-cmd --permanent --add-port=4789/udp
-   sudo firewall-cmd --reload
+    # Allow TCP ports 179, 10250, and 30000-32767
+    ufw allow 179/tcp
+    ufw allow 10250/tcp
+    ufw allow 30000:32767/tcp
+
+   # Allow UDP port 4789
+    ufw allow 4789/udp
+
+   # Reload UFW to apply changes
+    ufw reload
+
    ```
 
 2. **Join the Cluster**
@@ -244,7 +248,7 @@ kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=<Mas
 When you run the command `kubeadm token create --print-join-command` on the master node, the output will look similar to the following:
 
 ```yml
-kubeadm join 192.168.1.10:6443 --token abcdef.0123456789abcdef --discovery-token-ca-cert-hash sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
+kubeadm join <Master_Node_IP>:6443 --token abcdef.0123456789abcdef --discovery-token-ca-cert-hash sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
 ```
 
 ### **Explanation of the Output**:
