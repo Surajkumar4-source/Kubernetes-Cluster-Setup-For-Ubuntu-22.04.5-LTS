@@ -777,6 +777,58 @@ kubectl delete -f nginx-service.yaml
 
 
 
+<br>
+<br>
+<br>
+
+
+
+
+
+
+## *Kubectl run vs. Kubectl create deployment*
+
+   -  *kubectl run is intended for quick, one-off testing and debugging. It creates a single pod without any management controller. It lacks features such as auto-restart, scaling, and
+       rolling updates, making it unsuitable for production environments.*
+
+   - *kubectl create deployment (or using a Deployment YAML) creates a managed deployment backed by ReplicaSets. It supports automatic pod restarts, scaling, rolling updates, and rollbacks —       making it the preferred and production-ready approach for deploying applications in Kubernetes.*
+
+
+
+###  Test Case
+
+#### 🔸 `kubectl run` (Quick Pod)
+
+```bash
+kubectl run nginx-test --image=nginx
+```
+
+* Creates a **single Pod** named `nginx-test`.
+* If it crashes, it's **not restarted** unless you manually restart it.
+* No rolling updates or scaling.
+
+---
+
+#### 🔸 `kubectl create deployment` (Recommended)
+
+```bash
+kubectl create deployment nginx-deploy --image=nginx
+```
+
+* Creates a **Deployment** that manages **ReplicaSets** and **Pods**.
+* Can easily scale and update.
+* Pod restarts automatically if it crashes.
+
+---
+
+###  Important Notes:
+
+* `kubectl run` used to create Deployments by default before Kubernetes v1.18, but now it just creates **pods** unless you explicitly use flags.
+* For **long-running or production apps**, always use **Deployment**.
+
+
+
+
 
 <br>
 <br>
