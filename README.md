@@ -471,6 +471,198 @@ This prevents normal Pods from being scheduled on the master node again.
 
 <br>
 <br>
+
+
+
+
+##  Deploy and Expose an NGINX Pod
+
+###  Step 1: Deploy the Pod
+
+```bash
+kubectl run nginx-test --image=nginx --port=80
+```
+
+This creates a **Pod** named `nginx-test` but does **not expose it**, so it's not accessible via browser or DNS.
+
+---
+
+###  Step 2: Expose the Pod
+
+#### Expose via NodePort (Recommended for External Access)
+
+```bash
+kubectl expose pod nginx-test --type=NodePort --port=80
+```
+
+   - Get the assigned port:
+
+```bash
+kubectl get svc nginx-test
+```
+
+   - Sample output:
+
+```
+NAME         TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+nginx-test   NodePort   10.96.187.244    <none>        80:32123/TCP   5s
+```
+
+Access in browser:
+
+```
+http://<Node-IP>:32123
+```
+
+Replace `<Node-IP>` with your **master or worker node's IP**.
+
+
+
+### Common Mistake to Avoid
+
+If you only run `kubectl run` without exposing the pod, **you won’t be able to access it via browser or curl**.
+
+---
+
+## Edit the Default NGINX Page
+
+By default, NGINX serves a generic HTML page. To customize it:
+
+### ✅ Step 1: Access the Pod Shell
+
+```bash
+kubectl exec -it nginx-test -- /bin/bash
+```
+
+### ✅ Step 2: Navigate to Web Root
+
+```bash
+cd /usr/share/nginx/html
+```
+
+### ✅ Step 3: Edit the HTML File
+
+Install nano (if needed):
+
+```bash
+apt update && apt install nano -y
+```
+
+Edit the file:
+
+```bash
+nano index.html
+```
+
+📝 Add your message (e.g., "Welcome to my Kubernetes site!") and save (`Ctrl + O`, `Enter`, `Ctrl + X`).
+
+---
+
+### ✅ Step 4: Verify the Page in the Browser
+
+Via NodePort:
+
+```bash
+ http://<Node-IP>:32123
+```
+
+You should now see your **custom HTML content**.
+
+
+<br>
+<br>
+
+
+
+
+## Serve HTML Using ConfigMap (Persistent)
+
+### Step 1: Create `index.html` locally
+
+   - First, create a simple HTML file:
+
+```yml
+<!-- index.html -->
+<h1>Hello from ConfigMap!</h1>
+```
+
+   - Save it in your current directory.
+
+---
+
+###  Step 2: Create a ConfigMap from the HTML file
+
+   - Run this command in the terminal where your `index.html` is saved:
+
+```bash
+kubectl create configmap nginx-html --from-file=index.html
+```
+
+   - This will create a ConfigMap named `nginx-html` containing your HTML.
+
+---
+
+###  Step 3: Create the Pod definition YAML
+
+   - Now create a YAML file named `nginx-configmap.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-cm
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - containerPort: 80
+      volumeMounts:
+        - name: html-volume
+          mountPath: /usr/share/nginx/html
+  volumes:
+    - name: html-volume
+      configMap:
+        name: nginx-html
+```
+
+   - This Pod will use the HTML file stored in the ConfigMap to serve content.
+
+---
+
+###  Step 4: Deploy the Pod and expose it
+
+   - Apply the YAML and expose the pod as a service:
+
+```bash
+kubectl apply -f nginx-configmap.yaml
+kubectl expose pod nginx-cm --type=NodePort --port=80
+```
+
+---
+
+###  Step 5: Access the Web Page
+
+   - Get the NodePort assigned:
+
+```bash
+kubectl get svc nginx-cm
+```
+
+   - Then open your browser and go to:
+
+```
+http://<Node-IP>:<NodePort>
+```
+
+You should see: **"Hello from ConfigMap!"**
+
+---
+
+
+
+<br>
+<br>
 <br>
 <br>
 
